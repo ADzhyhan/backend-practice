@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const { UserDB } = require('../../models/user/UserDB');
+const { UserDB } = require('../../users/models/UserDB');
 
 const opts = {
   usernameField: 'email',
