@@ -1,6 +1,6 @@
 const LocalStrategy = require('passport-local');
 const jwt = require('jwt-simple');
-const dotenv = require('dotenv');
+const dotenv = require('dotenv'); 
 
 dotenv.config();
 
@@ -10,7 +10,7 @@ const opts = {
   usernameField: 'email',
   passwordField: 'password',
   passReqToCallback: true,
-  session: true,
+  session: false,
 };
 
 module.exports = new LocalStrategy(opts, async (req, email, password, done) => {
@@ -21,25 +21,25 @@ module.exports = new LocalStrategy(opts, async (req, email, password, done) => {
 
     const { user } = checkPasswordResponse;
 
-    const accessTokenPayload = {
-      id: user.id,
-      expiresIn: new Date().setTime(new Date().getTime() + 200000),
+    const accessToken = {
+      id: user.getId(),
+      expiresIn: new Date().setTime(new Date().getTime() + 2000000),
     };
-    const refreshTokenPayload = {
+
+    const refreshToken = {
       email: user.email,
       expiresIn: new Date().setTime(new Date().getTime() + 1000000),
     };
 
-    const accessToken = jwt.encode(accessTokenPayload, process.env.secretKey);
-    const refreshToken = jwt.encode(refreshTokenPayload, process.env.refreshTokenKey);
+    const responseData = user.getInfo();
 
-    user.tokens = { accessToken, refreshToken };
-    // user.tokens = {
-    //   accessToken: jwt.encode(accessToken, 'super_secret'),
-    //   accessTokenExpirationDate: accessToken.expiresIn,
-    //   refreshToken: jwt.encode(refreshToken, 'super_secret_refresh'),
-    //   refreshTokenExpirationDate: refreshToken.expiresIn,
-    // };
-    return done(null, user);
+    responseData.tokens = {
+      accessToken: jwt.encode(accessToken, process.env.secretKey),
+      accessTokenExpirationDate: accessToken.expiresIn,
+      refreshToken: jwt.encode(refreshToken, process.env.refreshTokenKey),
+      refreshTokenExpirationDate: refreshToken.expiresIn,
+    };
+
+    return done(null, responseData);
   }).catch((err) => done({ message: err.message }, false));
 });
